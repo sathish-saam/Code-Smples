@@ -1,0 +1,735 @@
+<odoo>
+	<data>
+
+		<template id="website_inherited" name="web_ass_inherit"
+			inherit_id="website.assets_frontend">
+			<xpath expr="." position="inside">
+				<link rel="stylesheet"
+					href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"></link>
+				<link rel="stylesheet" href="/shc_website/static/src/css/style.css" />
+				<link rel="stylesheet" href="/shc_website/static/src/css/styles.css" />
+				<link rel="stylesheet" href="/shc_published_paper/static/src/css/image.css" />
+				<!-- <link rel="stylesheet" href="/shc_website/static/src/css/base.css" 
+					/> -->
+			</xpath>
+		</template>
+
+		<template id="clean_script" inherit_id="website.assets_frontend"
+			name="Clean scripts">
+			<xpath expr="/t" position="inside">
+				<script type="text/javascript" src="/shc_website/static/src/js/custom.js" />
+			</xpath>
+		</template>
+
+		<template id="publish_paper" name="Publish Paper">
+			<t t-call="website.layout">
+				<br />
+				<br />
+				<br />
+				<div
+					style="background-color:#023d6e;width:100%;height:40px;padding-top: 2px;position: relative;top: -8px;line-height: 21px;">
+					<p
+						style="text-align:center;font-size: 22px;font-weight: bold;color: white;position: relative;top: 4px;">
+						<span t-esc='volume_name' />
+					</p>
+					<h3 style="position: absolute;top: -13px;right: 52px;color: white;font-weight: bold;;"><span t-esc='issn_no' /></h3> <!-- color:#DAA520 -->
+				</div>
+				<br />
+				<br />
+				<div style="float:right;">
+					<form action="/shc/publish_paper/" method="post"
+						style="position: relative;top: -42px;left: -75px">
+						<input type="hidden" name="csrf_token" t-att-value="request.csrf_token()" />
+						<div class="input-group" style="width:310px;">
+							<select id="search_type"
+								style="margin-left: -96px;margin-top: 1px;position: absolute;height: 32px;width: 91px;">
+								<option value="volume">Volume</option>
+								<option value="title">Title</option>
+								<option value="author">Author</option>
+							</select>
+							<div class="oe_search">
+								<input type="text" name="search"
+									class="search-query form-control oe_search_box" placeholder="Search..."
+									value="" />
+							</div>
+							<span class="input-group-btn">
+								<button type="submit" class="btn btn-default oe_search_button"
+									style="position: absolute; margin-top: -17px;height: 33px;background-color: #023d6f;color: white;">
+									<i class="fa fa-search"></i>
+								</button>
+							</span>
+						</div>
+					</form>
+				</div>
+				<div style="float:left;width:25%;padding:15px;position: relative;top: -12px;">
+					<ul class="nav nav-pills nav-stacked" >
+						<t t-foreach="volumes or []" t-as="volume">
+							<li >
+								<span>
+									<a style="color:#023d6e;font-weight:bold;font-size:18px;"
+										t-attf-href="/shc/publish_paper?{{ keep_query(volume=volume['volume_name'])}}">
+										<span t-esc="volume['volume_name']" />
+									</a>
+								</span>
+							</li>
+						</t>
+					</ul>
+				</div>
+
+				<div style="float:right;width:75%;position: relative;top: -41px;">
+					<div class="text-center text-muted" t-if="not papers">
+						<h1 style="color:color:black;font-weight:bold;">No Paper found</h1>
+					</div>
+					<ul class="media-list">
+						<li t-foreach="papers" t-as="paper" class="media">
+							<div>
+								<p style="color:black;font-weight:bold;">
+									<span t-esc="paper['name']" style="font-size: 14px;" />
+								</p>
+								<t t-if="paper['author_id']">
+									<p style="color:black;">
+										<span t-esc="paper['author_id']" style="font-size: 14px;" />
+									</p>
+								</t>
+								<t t-if="paper['article_info']">
+									<p style="color:black;">
+										<span t-esc="paper['article_info']" style="font-size: 14px;" />
+										,
+										<span t-esc="paper['page']" style="font-size: 14px;" />
+									</p>
+								</t>
+								<a class="button" style="background-color:#023d6e;color:white;"
+									t-attf-href="/abstract_paper?{{ keep_query(paper=paper['name'])}}">
+									<span>Abstract</span>
+								</a>
+								<![CDATA[&nbsp;]]>
+								<t t-if="paper['ir_attachement_id']">
+									<a class="button" style="background-color:#023d6e;color:white;"
+										t-attf-href="/web/binary/view_document?model=ir.attachment&amp;id={{paper['ir_attachement_id']}}">
+										<span>Preview PDF</span>
+									</a>
+								</t>
+								<![CDATA[&nbsp;]]>
+								<t t-if="paper['ir_attachement_id']">
+									<a class="button" style="background-color:#023d6e;color:white;"
+										t-attf-href="/web/binary/download_document?model=ir.attachment&amp;id={{paper['ir_attachement_id']}}">
+										<span>Download PDF</span>
+									</a>
+								</t>
+								<br />
+							</div>
+						</li>
+					</ul>
+					<!-- <div style="width: 70%;position: relative;top: -140px;right: -519px;"> -->
+				</div>
+			</t>
+		</template>
+
+		<template id="abstract_paper" name="Abstract Paper">
+			<t t-call="website.layout">
+				<div id="wrap" style="background-color:white;width:100%">
+					<div class="container" style="width:100%">
+						<h1
+							style="color: rgb(106, 175, 126); font-weight: bold; font-size: 20px;">Abstract Paper</h1>
+						<br />
+						<t t-foreach="papers or []" t-as="paper">
+							<t t-if="paper['is_jlogo_or_notes']">
+								<div style="width:100%">
+									<t t-if="paper['jlogo']">
+										<div style="float:left;width:20%">
+											<img t-att-src="'data:image/png;base64,%s' % paper['jlogo']"
+												style="width: 136px;height:167px;padding-top: 0px;padding-bottom: 10px;">
+											</img>
+										</div>
+									</t>
+									<div style="float:right;width:80%;text-align: justify;">
+										<span
+											style="font-size: 27px;position: relative;top: 15px;color: #023d6e;left: 150px;font-weight: bold;">
+											Journal of
+										</span>
+										<span t-esc="paper['journal_notes']"
+											style="font-size: 27px;position: relative;top: 15px;color: #023d6e;left: 150px;font-weight: bold;" />
+									</div>
+								</div>
+							</t>
+							<br />
+							<table style="border-collapse: collapse; width: 100%;">
+								<tr>
+									<th
+										style="text-align: left;padding: 8px;font-weight:bold;width: 150px;">Title</th>
+									<td style="text-align: left;padding: 8px;">
+										<b>: </b>
+										<span style="font-weight:bold;font-size:14px" t-esc="paper['title']" />
+									</td>
+								</tr>
+								<t t-if="paper['author_id']">
+									<tr>
+										<th
+											style="text-align: left;padding: 8px;font-weight:bold;width: 150px;">Author(s)</th>
+										<td style="text-align: left;padding: 8px;">
+											<b>: </b>
+											<span t-esc="paper['author_id']" style="font-size: 14px;" />
+										</td>
+									</tr>
+								</t>
+								<tr>
+									<th
+										style="text-align: left;padding: 8px;font-weight:bold;width: 150px;">Article Information</th>
+									<td style="text-align: left;padding: 8px;">
+										<b>: </b>
+										<span t-esc="paper['volume1']" style="font-size: 14px;" />
+										,
+										<span t-esc="paper['page']" style="font-size: 14px;" />
+									</td>
+								</tr>
+								<t t-if="paper['affiliation1']">
+									<tr>
+										<th
+											style="text-align: left;padding: 8px;font-weight:bold;width: 150px;">Affiliation(s)</th>
+										<td style="text-align: left;padding: 8px;">
+											<b>: </b>
+											<span t-esc="paper['affiliation1']" style="font-size: 14px;" />
+										</td>
+									</tr>
+								</t>
+								<t t-if="paper['affiliation2']">
+									<tr>
+										<th></th>
+										<td style="text-align: left;padding: 8px;">
+											<b>: </b>
+											<span t-esc="paper['affiliation2']" style="font-size: 14px;" />
+										</td>
+									</tr>
+								</t>
+								<t t-if="paper['affiliation3']">
+									<tr>
+										<th></th>
+										<td style="text-align: left;padding: 8px;">
+											<b>: </b>
+											<span t-esc="paper['affiliation3']" style="font-size: 14px;" />
+										</td>
+									</tr>
+								</t>
+								<t t-if="paper['affiliation4']">
+									<tr>
+										<th></th>
+										<td style="text-align: left;padding: 8px;">
+											<b>: </b>
+											<span t-esc="paper['affiliation4']" style="font-size: 14px;" />
+										</td>
+									</tr>
+								</t>
+								<t t-if="paper['affiliation5']">
+									<tr>
+										<th></th>
+										<td style="text-align: left;padding: 8px;">
+											<b>: </b>
+											<span t-esc="paper['affiliation5']" style="font-size: 14px;" />
+										</td>
+									</tr>
+								</t>
+							</table>
+							<hr style="border-color:#4e9caf;" />
+							<t t-if="paper['abstract']">
+								<span style="color:black;font-weight:bold;">Abstract : </span>
+								<p style="text-align: justify;">
+									<span t-esc="paper['abstract']" style="font-size: 14px;" />
+								</p>
+							</t>
+							<t t-if="not paper['abstract']">
+								<p>
+									<span
+										style="font-size: 40px;font-weight:bold;text-align:center;color:#cccccc;">
+										There is no abstract for this article.
+									</span>
+								</p>
+							</t>
+							<hr style="border-color:#4e9caf;" />
+							<table style="border-collapse: collapse; width: 100%;">
+								<tr>
+									<th
+										style="text-align: left;padding: 8px;font-weight:bold;width: 150px;">Keywords</th>
+									<td style="text-align: left;padding: 8px;">
+										<b>: </b>
+										<span t-esc="paper['keywords']" style="font-size: 14px;" />
+									</td>
+								</tr>
+								<tr>
+									<th
+										style="text-align: left;padding: 8px;font-weight:bold;width: 150px;">Document Type</th>
+									<td style="text-align: left;padding: 8px;">
+										<b>: </b>
+										<span t-esc="paper['type_of_artcile']" style="font-size: 14px;" />
+									</td>
+								</tr>
+								<t t-if="paper['doi']">
+									<tr>
+										<th
+											style="text-align: left;padding: 8px;font-weight:bold;width: 150px;">DOI</th>
+										<td style="text-align: left;padding: 8px;">
+											<b>: </b>
+											<span t-esc="paper['doi']" style="font-size: 14px;" />
+										</td>
+									</tr>
+								</t>
+								<tr>
+									<th
+										style="text-align: left;padding: 8px;font-weight:bold;width: 150px;">Publication date</th>
+									<td style="text-align: left;padding: 8px;">
+										<b>: </b>
+										<span t-esc="paper['publish_date']" style="font-size: 14px;" />
+									</td>
+								</tr>
+							</table>
+							<hr style="border-color:#4e9caf;" />
+							<br />
+							<a t-attf-href="/shc/publish_paper?{{ keep_query(volume=paper['volume']) }}">
+								<input style="position: relative;top: -20px;" type="image"
+									src="/shc_published_paper/static/src/img/goBack.png" alt="Submit"
+									width="130" height="38" />
+
+							</a>
+						</t>
+						<t t-if="ir_attachement_id">
+							<a
+								t-attf-href="/web/binary/view_document?model=ir.attachment&amp;id={{ir_attachement_id}}">
+								<input style="position: relative;top: -20px;" type="image"
+									src="/shc_published_paper/static/src/img/previewpdf.png" alt="Submits"
+									width="130" height="38" />
+							</a>
+						</t>
+						<t t-if="ir_attachement_id">
+							<a
+								t-attf-href="/web/binary/download_document?model=ir.attachment&amp;id={{ir_attachement_id}}">
+								<input style="position: relative;top: -20px;" type="image"
+									src="/shc_published_paper/static/src/img/download.png" alt="Submit"
+									width="130" height="38" />
+							</a>
+						</t>
+					</div>
+				</div>
+			</t>
+		</template>
+
+		<template id="journals" name="Journals">
+			<t t-call="website.layout">
+				<section class="full-section features-section fancy-shadow">
+					<div class="tp-banner">
+						<div id="myCarousel" class="carousel slide" style="height:202px;"
+							data-ride="carousel">
+
+							<ol class="carousel-indicators">
+								<li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+								<li data-target="#myCarousel" data-slide-to="1"></li>
+							</ol>
+							<div class="carousel-inner" role="listbox" style="background-color:#323542">
+								<div class="item active">
+									<div style=" position: relative;top: 57px;left: -420px;">
+										<a href="#" class="ib">
+											<img src="/shc_website/static/img/logo@2x.jpg" width="50"
+												height="50" alt="Logo"></img>
+											<span style="color:white;font-size:25px;font-weight:bold;">Sacred Heart Research Publications</span>
+										</a>
+									</div>
+									<div style="float:right;background-color:#323542;width: 850px;"
+										class="col-md-3">
+										<a href="#" class="ib">
+											<img src="/shc_website/static/img/clogo.png" width="130"
+												height="150" alt="Logo" style="    position: relative;left: -140px;"></img>
+										</a>
+										<span
+											style="color:white;position: relative;left: -5px;font-size: 22px;">
+											On-line Portal to Publish Research Articles.
+										</span>
+									</div>
+									<img
+										src="/shc_website/static/src/img/01-home-slide-item-1-1600x770.jpg"
+										alt="Chania" width="440" height="100">
+									</img>
+								</div>
+
+								<div class="item">
+									<div style=" position: relative;top: 57px;left: -420px;">
+										<a href="#" class="ib">
+											<img src="/shc_website/static/img/logo@2x.jpg" width="50"
+												height="50" alt="Logo"></img>
+											<span style="color:#f44336;font-size:25px;font-weight:bold;">Sacred Heart Research Publications</span>
+										</a>
+									</div>
+
+									<div style="float:right;background-color:#323542;width: 850px;"
+										class="col-md-3">
+										<a href="#" class="ib">
+											<img src="/shc_website/static/img/clogo.png" width="130"
+												height="150" alt="Logo" style="    position: relative;left: -341px;"></img>
+										</a>
+										<h3 style="color:white">PUBLISH YOUR ARTICLES</h3>
+										<div style="width: 84%;height: 50%;position: relative;left: 10px;">
+											<span
+												style="color: white; position: relative;top: -176px;left: 129px;">
+												AN ONLINE PORTAL TO PUBLISH RESEARCH ARTICLES
+												IN
+												JOURNALS OF
+												COMPUTING AND INTELLIGENT SYSTEMS, FUNCTIONAL
+												MATERIALS AND
+												BIO-MOLECULES, COMPUTATIONAL MATHAMETICA,
+												SOCIAL
+												SCIENCES AND
+												MANAGEMENT RESEARCH AND PUTHIYA AAVIAYAM.
+											</span>
+										</div>
+									</div>
+									<img
+										src="/shc_website/static/src/img/01-home-slide-item-2-1600x770.jpg"
+										alt="Chania" width="440" height="100">
+									</img>
+								</div>
+							</div>
+
+							<!-- Left and right controls -->
+							<a class="left carousel-control" href="#myCarousel" role="button"
+								data-slide="prev">
+								<span style="top:75%" class="glyphicon glyphicon-chevron-left"
+									aria-hidden="true"></span>
+								<span class="sr-only">Previous</span>
+							</a>
+							<a class="right carousel-control" href="#myCarousel" role="button"
+								data-slide="next">
+								<span style="top:75%" class="glyphicon glyphicon-chevron-right"
+									aria-hidden="true"></span>
+								<span class="sr-only">Next</span>
+							</a>
+						</div>
+					</div>
+					<div class="section-content features-content fadeInDown-animation">
+						<div class="container">
+							<div class="row">
+								<div class="col-md-12">
+									<div class="row sec1">
+										<a t-attf-href="/computing_home" class="hover">
+											<div class="col-md-1">
+												<img src="/shc_website/static/img/assets/home-computer.png"
+													width="75px" height="77px" class="es-tr" alt=""></img>
+											</div>
+											<div class="col-md-5">
+												<p style="text-align:left;position: relative;top: 18px;">Journal of Computing and Intelligent Systems -
+													JCIS
+												</p>
+											</div>
+											<div class="col-md-6">
+												<p style="text-align:left;position: relative;top: 18px;">Journal of Computing and Intelligent Systems
+													(JCIS) is an...
+												</p>
+											</div>
+										</a>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-12">
+									<div class="row sec1">
+										<a t-attf-href="/maths_home" class="hover">
+											<div class="col-md-1">
+												<img src="/shc_website/static/img/assets/home-maths.jpg"
+													width="75px" height="77px" class="es-tr" alt=""></img>
+											</div>
+											<div class="col-md-5">
+												<p style="text-align:left;position: relative;top: 18px;">Journal of Computational Mathematica</p>
+											</div>
+											<div class="col-md-6">
+												<p style="text-align:left;position: relative;top: 18px;">Journal of Computational Mathematica, a
+													peer-reviewed open...
+												</p>
+											</div>
+										</a>
+									</div>
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col-md-12">
+									<div class="row sec1">
+										<a t-attf-href="/materials_home" class="hover">
+											<div class="col-md-1">
+												<img src="/shc_website/static/img/assets/home-material.jpg"
+													width="75px" height="77px" class="es-tr" alt=""></img>
+											</div>
+											<div class="col-md-5">
+												<p style="text-align:left;position: relative;top: 18px;">Journal of Functional Materials and
+													Bio-molecules - JFMB
+												</p>
+											</div>
+											<div class="col-md-6">
+												<p style="text-align:left;position: relative;top: 18px;">Journal of Functional Materials and Biomolecules
+													(JFMB) is a...
+												</p>
+											</div>
+										</a>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-12">
+									<div class="row sec1">
+										<a t-attf-href="/social_home" class="hover">
+											<div class="col-md-1">
+												<img src="/shc_website/static/img/assets/home-social.jpg"
+													width="75px" height="77px" class="es-tr" alt=""></img>
+											</div>
+											<div class="col-md-5">
+												<p style="text-align:left;position: relative;top: 18px;">Journal of Social Sciences and Management
+													Research.(JSSMR)
+												</p>
+											</div>
+											<div class="col-md-6">
+												<p style="text-align:left;position: relative;top: 18px;">The Journal of Management and Social Science
+													Research ...
+												</p>
+											</div>
+										</a>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-12">
+									<div class="row sec1">
+										<a t-attf-href="/tamil_home" class="hover">
+											<div class="col-md-1">
+												<img src="/shc_website/static/img/assets/home-tamil.jpg"
+													width="75px" height="77px" class="es-tr" alt=""></img>
+											</div>
+											<div class="col-md-5">
+												<p style="text-align:left;position: relative;top: 18px;">Puthiya Aaviayam</p>
+											</div>
+											<div class="col-md-6">
+												<p style="text-align:left;position: relative;top: 18px;">திருப்பத்தூர் தூய நெஞ்சக்கல்லூரியின் மகத்தான...
+												</p>
+											</div>
+										</a>
+									</div>
+								</div>
+							</div>
+
+
+						</div>
+					</div>
+					<!-- End Features Section Content -->
+				</section>
+			</t>
+		</template>
+		<!-- Articles -->
+		<template id="articles" name="View Articles">
+			<t t-call="website.layout">
+				<div class="tp-banner">
+					<div id="myCarousel" class="carousel slide" style="height:202px;"
+						data-ride="carousel">
+
+						<ol class="carousel-indicators">
+							<li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+							<li data-target="#myCarousel" data-slide-to="1"></li>
+						</ol>
+						<div class="carousel-inner" role="listbox" style="background-color:#323542">
+							<div class="item active">
+								<div style=" position: relative;top: 57px;left: 9px;">
+									<a href="#" class="ib">
+										<img src="/shc_website/static/img/logo@2x.jpg" width="50"
+											height="50" alt="Logo"></img>
+										<span style="color:white;font-size:25px;font-weight:bold;">Sacred Heart Research Publications</span>
+									</a>
+								</div>
+								<div style="float:right;background-color:#323542;width: 850px;"
+									class="col-md-3">
+									<a href="#" class="ib">
+										<img src="/shc_website/static/img/clogo.png" width="130"
+											height="150" alt="Logo"></img>
+									</a>
+									<span
+										style="color:white;position: relative;left: 160px;font-size: 22px;">
+										On-line Portal to Publish Research Articles.
+									</span>
+								</div>
+								<img
+									src="/shc_website/static/src/img/01-home-slide-item-1-1600x770.jpg"
+									alt="Chania" width="440" height="100">
+								</img>
+							</div>
+
+							<div class="item">
+								<div style=" position: relative;top: 57px;left: 9px;">
+									<a href="#" class="ib">
+										<img src="/shc_website/static/img/logo@2x.jpg" width="50"
+											height="50" alt="Logo"></img>
+										<span style="color:#f44336;font-size:25px;font-weight:bold;">Sacred Heart Research Publications</span>
+									</a>
+								</div>
+								<div style="float:right;background-color:#323542;width: 850px;">
+									<a href="#" class="ib">
+										<img src="/shc_website/static/img/clogo.png" width="130"
+											height="150" alt="Logo"></img>
+									</a>
+									<h3 style="color:white">PUBLISH YOUR ARTICLES</h3>
+									<div style="width: 84%;height: 50%;position: relative;left: 10px;">
+										<span
+											style="color: white; position: relative;top: -176px;left: 129px;">
+											AN ONLINE PORTAL TO PUBLISH RESEARCH ARTICLES
+											IN
+											JOURNALS OF
+											COMPUTING AND INTELLIGENT SYSTEMS, FUNCTIONAL
+											MATERIALS AND
+											BIO-MOLECULES, COMPUTATIONAL MATHAMETICA, SOCIAL
+											SCIENCES AND
+											MANAGEMENT RESEARCH AND PUTHIYA AAVIAYAM.
+										</span>
+									</div>
+								</div>
+								<img
+									src="/shc_website/static/src/img/01-home-slide-item-2-1600x770.jpg"
+									alt="Chania" width="440" height="100">
+								</img>
+							</div>
+						</div>
+
+						<!-- Left and right controls -->
+						<a class="left carousel-control" href="#myCarousel" role="button"
+							data-slide="prev">
+							<span style="top:75%" class="glyphicon glyphicon-chevron-left"
+								aria-hidden="true"></span>
+							<span class="sr-only">Previous</span>
+						</a>
+						<a class="right carousel-control" href="#myCarousel" role="button"
+							data-slide="next">
+							<span style="top:75%" class="glyphicon glyphicon-chevron-right"
+								aria-hidden="true"></span>
+							<span class="sr-only">Next</span>
+						</a>
+					</div>
+				</div>
+				<section class="full-section features-section fancy-shadow"
+					style="background-color:white;">
+					<div class="section-content features-content fadeInDown-animation">
+						<div class="container">
+							<div class="row">
+								<div class="col-md-3 col-xs-12">
+									<div>
+										<div class="icon">
+											<figure>
+												<a
+													t-attf-href="/shc/publish_paper?{{ keep_query(name='Computing and Intelligent Systems',is_volume='True' )}}">
+													<img
+														style="width: 136px; height: 167px;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)"
+														src="/shc_website/static/img/assets/home-computer.png"
+														class="es-tr" alt=""></img>
+												</a>
+											</figure>
+										</div><!-- End Icon -->
+										<br/>
+										<a
+											t-attf-href="/shc/publish_paper?{{ keep_query(name='Computing and Intelligent Systems',is_volume='True' )}}">
+											<h5 class="feature-title" style="width: 289px;color:#6aaf7e;">Journal of Computing and
+												Intelligent Systems
+											</h5>
+										</a>
+									</div><!-- End Features Box -->
+								</div>
+								<div class="col-md-3 col-xs-12">
+									<div>
+										<div class="icon" style="position: relative; left: 140px;">
+											<figure>
+												<a
+													t-attf-href="/shc/publish_paper?{{ keep_query(name='Computational Mathametica') }}">
+													<img
+														style="width: 136px; height: 167px;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)"
+														src="/shc_website/static/img/assets/home-maths.jpg" class="es-tr"
+														alt=""></img>
+												</a>
+											</figure>
+										</div><!-- End Icon -->
+										<br/>
+										<a
+											t-attf-href="/shc/publish_paper?{{ keep_query(name='Computational Mathametica') }}">
+											<h5 class="feature-title" style="position: relative; left: 140px;color:#6aaf7e;">Journal of Computational
+												Mathematica
+											</h5>
+										</a>
+									</div><!-- End Features Box -->
+								</div>
+								<div class="col-md-3 col-xs-12">
+									<div>
+										<div class="icon" style="position: relative; left: 280px;">
+											<figure>
+												<a
+													t-attf-href="/shc/publish_paper?{{ keep_query(name='Social Sciences and Management Research') }}">
+													<img
+														style="width: 136px; height: 167px;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)"
+														src="/shc_website/static/img/assets/home-social.jpg"
+														class="es-tr" alt=""></img>
+												</a>
+											</figure>
+										</div><!-- End Icon -->
+										<br/>
+										<a
+											t-attf-href="/shc/publish_paper?{{ keep_query(name='Social Sciences and Management Research') }}">
+											<h5 class="feature-title"
+												style="position: relative; left: 290px;width: 290px;color:#6aaf7e;">Journal of Social Sciences
+												and Management
+												Research
+											</h5>
+										</a>
+									</div><!-- End Features Box -->
+								</div>
+							</div>
+						</div>
+					</div><!-- End Features Section Content -->
+					<div class="section-content features-content fadeInDown-animation">
+						<div class="container">
+							<div class="row">
+								<div class="col-md-3 col-xs-6">
+									<div>
+										<div class="icon">
+											<figure>
+												<a
+													t-attf-href="/shc/publish_paper?{{ keep_query(name='Functional Materials and Bio-molecules') }}">
+													<img
+														style="width: 136px; height: 167px;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)"
+														src="/shc_website/static/img/assets/home-material.jpg"
+														class="es-tr" alt=""></img>
+												</a>
+											</figure>
+										</div><!-- End Icon -->
+										<br/>
+										<a
+											t-attf-href="/shc/publish_paper?{{ keep_query(name='Functional Materials and Bio-molecules') }}">
+											<h5 class="feature-title" style="width: 330px;color:#6aaf7e;">Journal of Functional
+												Materials and Biomolecules
+											</h5>
+										</a>
+									</div><!-- End Features Box -->
+								</div>
+								<div class="col-md-3 col-xs-6">
+									<div>
+										<div class="icon" style="position: relative; left: 140px;">
+											<figure>
+												<a
+													t-attf-href="/shc/publish_paper?{{ keep_query(name='Puthiya Aaviayam') }}">
+													<img
+														style="width: 136px; height: 167px;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)"
+														src="/shc_website/static/img/assets/home-tamil.jpg" class="es-tr"
+														alt=""></img>
+												</a>
+											</figure>
+										</div><!-- End Icon -->
+										<br/>
+										<a
+											t-attf-href="/shc/publish_paper?{{ keep_query(name='Puthiya Aaviayam') }}">
+											<h5 class="feature-title" style="position: relative; left: 209px;color:#6aaf7e;">Puthiya Aaviayam</h5>
+										</a>
+									</div><!-- End Features Box -->
+								</div>
+							</div>
+						</div>
+					</div>
+				</section>
+			</t>
+		</template>
+	</data>
+</odoo>
